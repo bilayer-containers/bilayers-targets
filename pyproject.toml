@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bilayers-targets"
+version = "0.1.0"
+description = "Interface generation targets for Bilayers"
+requires-python = ">=3.9"
+dependencies = [
+    "bilayers-schema @ git+https://github.com/bilayer-containers/bilayers-schema.git@dev",
+]
+
+[project.optional-dependencies]
+gradio = ["jinja2"]
+jupyter = ["jinja2", "nbformat"]
+cellprofiler_plugin = ["jinja2"]
+streamlit = ["jinja2"]
+
+interfaces = [
+    "bilayers-targets[gradio]",
+    "bilayers-targets[jupyter]",
+    "bilayers-targets[streamlit]",
+]
+
+plugins = [
+    "bilayers-targets[cellprofiler_plugin]",
+]
+
+all = [
+    "bilayers-targets[interfaces]",
+    "bilayers-targets[plugins]",
+]
+
+test = ["pytest", "bilayers-targets[all]"]
+lint = ["ruff"]
+dev = ["bilayers-targets[test]", "bilayers-targets[lint]"]
+
+[project.entry-points."bilayers.interfaces"]
+gradio = "bilayers_targets.interfaces.gradio.generate:generate"
+jupyter = "bilayers_targets.interfaces.jupyter.generate:generate"
+streamlit = "bilayers_targets.interfaces.streamlit.generate:generate"
+cellprofiler_plugin = "bilayers_targets.plugins.cellprofiler_plugin.generate:generate"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["bilayers_targets*"]
+
+[tool.setuptools.package-data]
+"*" = ["**/*.j2", "**/*.Dockerfile"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
+
+[tool.pixi.dependencies]
+python = ">=3.9"
+
+[tool.pixi.pypi-dependencies]
+bilayers-targets = { path = ".", editable = true}
+
+[tool.pixi.environments]
+dev = ["dev", "test", "lint", "interfaces", "plugins"]
+
+[tool.ruff]
+line-length = 160
