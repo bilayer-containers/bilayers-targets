@@ -36,12 +36,6 @@ test = ["pytest", "bilayers-targets[all]"]
 lint = ["ruff"]
 dev = ["bilayers-targets[test]", "bilayers-targets[lint]"]
 
-[project.entry-points."bilayers.interfaces"]
-gradio = "bilayers_targets.interfaces.gradio.generate:generate"
-jupyter = "bilayers_targets.interfaces.jupyter.generate:generate"
-streamlit = "bilayers_targets.interfaces.streamlit.generate:generate"
-cellprofiler_plugin = "bilayers_targets.plugins.cellprofiler_plugin.generate:generate"
-
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["bilayers_targets*"]
