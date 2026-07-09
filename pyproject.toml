@@ -32,7 +32,7 @@ all = [
     "bilayers-targets[plugins]",
 ]
 
-test = ["pytest", "bilayers-targets[all]"]
+test = ["pytest", "pydantic", "bilayers-targets[all]"]
 lint = ["ruff"]
 dev = ["bilayers-targets[test]", "bilayers-targets[lint]"]
 
@@ -52,6 +52,12 @@ python = ">=3.9"
 
 [tool.pixi.pypi-dependencies]
 bilayers-targets = { path = ".", editable = true}
+
+[tool.pixi.feature.dev.pypi-dependencies]
+pre-commit = "*"
+
+[tool.pixi.feature.dev.activation]
+scripts = ["scripts/install-pre-commit.sh"]
 
 [tool.pixi.environments]
 dev = ["dev", "test", "lint", "interfaces", "plugins"]
