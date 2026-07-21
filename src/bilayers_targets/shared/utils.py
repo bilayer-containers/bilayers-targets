@@ -25,7 +25,8 @@ def generate_top_level_text(interface_citation: Citations, citations: dict[str, 
         "license": "BSD 3-Clause",
         "description": "A Container Specification and CI/CD built for whole-community support",
     }
-    assert "name" in interface_citation and interface_citation.get("name"), "Must provide a name for interface citation"
+    if not interface_citation.get("name"):
+        raise ValueError("Must provide a name for interface citation")
 
     interface_name = interface_citation.get("name")
 
