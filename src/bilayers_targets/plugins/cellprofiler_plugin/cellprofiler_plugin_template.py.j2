@@ -200,7 +200,7 @@ class {{ algorithm_folder_name }}({{ category_to_class.get(computed_category, "M
         self.{{ input_conf.get('name') }} = {{ type_mapping.get(input_conf.get('type'), default_type) }}(
             text="{{ input_conf.get('label') }}",
             {% if input_conf.get('default') is not none %}
-            value="{{ input_conf.get('default') }}",
+            value={{ input_conf.get('default') | tojson }},
             {% endif %}
             doc="""\
 {{ input_conf.get('description') }}
@@ -279,12 +279,14 @@ The image will be automatically downloaded on first use.
             ],
             {% endif %}
             {% if parameter.get('default') is not none %}
+            {% if parameter.get('type') == 'checkbox' %}
             {% if parameter.get('default') in [True, "True", "true"] %}
             value=True,
-            {% elif parameter.get('default') in [False, "False", "false"] %}
-            value=False,
             {% else %}
-            value="{{ parameter.get('default') }}",
+            value=False,
+            {% endif %}
+            {% else %}
+            value={{ parameter.get('default') | tojson }},
             {% endif %}
             {% endif %}
             {% if parameter.get('type') in ["integer", "float"] %}
