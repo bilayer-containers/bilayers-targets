@@ -14,6 +14,8 @@ for name, module_name in _INTERFACE_MODULES.items():
         mod = import_module(module_name)
         available_ifaces[name] = mod
 
-    except Exception:
-        # optional dependency missing
+    except ModuleNotFoundError:
+        # An optional interface dependency is missing (e.g. jinja2, nbformat);
+        # skip this interface. Any other error (syntax/runtime bug in a
+        # generator) propagates instead of being silently hidden.
         pass

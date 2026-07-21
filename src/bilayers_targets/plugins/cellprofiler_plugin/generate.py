@@ -130,9 +130,8 @@ def determine_category_from_matrix(inputs: dict, outputs: dict) -> str:
 def normalize_category_for_cellprofiler(category: str) -> str:
     """Map internal/general categories to ones CellProfiler recognizes.
 
-    Currently we collapse "Decoder" to "Measurement" so the generated
-    plugin fits within existing CP UI groupings. Additional mappings can
-    be adjusted here without touching the matrix logic.
+    CellProfiler doesn't currently support the "Decoder" category, so we mark it
+    as "Not Supported" and abort plugin generation with a clear error
     """
     if category == "Decoder":
         return "Not Supported"
