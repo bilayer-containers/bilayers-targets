@@ -8,7 +8,7 @@ ARG FOLDER_NAME
 ARG INTERFACE
 
 # Install the dependencies for the gradio app
-RUN python -m pip install --no-cache-dir pyyaml pydantic==2.10.6 gradio==4.44.1 huggingface-hub==0.34.3
+RUN $(command -v python || command -v python3) -m pip install --no-cache-dir pyyaml pydantic==2.10.6 gradio==4.44.1 huggingface-hub==0.34.3 fastapi==0.112.2 starlette==0.38.2
 
 # Set the working directory within the container
 WORKDIR /bilayers
@@ -23,4 +23,4 @@ RUN touch /bilayers/__init__.py
 EXPOSE 7878
 
 # Define the command to run the app
-CMD ["python", "-u", "app.py"]
+CMD ["sh", "-c", "$(command -v python || command -v python3) -u app.py"]
