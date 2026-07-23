@@ -8,7 +8,7 @@ ARG FOLDER_NAME
 ARG INTERFACE
 
 # Install the dependencies for the jupyter notebook
-RUN python -m pip install --no-cache-dir pyyaml jupyter huggingface-hub==0.23.4 pydantic==2.7.4
+RUN $(command -v python || command -v python3) -m pip install --no-cache-dir pyyaml jupyter huggingface-hub==0.23.4 pydantic==2.7.4
 
 # Set the working directory within the container
 WORKDIR /bilayers
