@@ -8,9 +8,7 @@ ARG FOLDER_NAME
 ARG INTERFACE
 
 # Install the dependencies for the streamlit app
-# Note:
-
-RUN python -m pip install pyyaml streamlit pydantic
+RUN $(command -v python || command -v python3) -m pip install --no-cache-dir pyyaml streamlit pydantic
 
 # Set the working directory within the container
 WORKDIR /bilayers
