@@ -26,4 +26,5 @@ RUN touch /bilayers/__init__.py
 EXPOSE 7878
 
 # Define the command to run the app
-CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--allow-root", "--port=7878"]
+# websocket_max_message_size is raised from Tornado's 10 MB default to 1 GB
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--allow-root", "--port=7878", "--ServerApp.tornado_settings={'websocket_max_message_size': 1073741824}"]
