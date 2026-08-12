@@ -175,6 +175,11 @@ def generate_cli_command(
                 option = option_to_append(cli_tag, value)
                 if option:
                     cli_command.append(option)
+            elif cli_tag == "":
+                # Positional argument: append the bare value, mirroring the
+                # cli_tag == "" case for list-style inputs.
+                cli_command.append(str(value))
+            # cli_tag is None / "None" -> intentionally not passed to CLI
 
     return " ".join(cli_command), folder_name, output_folder_name
 
