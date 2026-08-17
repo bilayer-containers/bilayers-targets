@@ -3,7 +3,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from bilayers_schema import Citations, Input, Output, Parameter, ExecFunction, DockerImage, InterfaceInput
+from bilayers_schema import Citations, Input, Output, Parameter, DisplayOnly, ExecFunction, DockerImage, InterfaceInput
 
 
 # TODO: put in wiki to make publically available
@@ -144,7 +144,7 @@ def generate_cellprofiler_plugin(
         inputs: dict[str, Input],
         outputs: dict[str, Output],
         parameters: dict[str, Parameter],
-        display_only: Optional[dict[str, Parameter]],
+        display_only: Optional[dict[str, DisplayOnly]],
         algorithm_folder_name: str,
         exec_function: ExecFunction,
         citations: dict[str, Citations],
@@ -160,7 +160,7 @@ def generate_cellprofiler_plugin(
         inputs (dict[str, Input]): List of input configurations.
         outputs (dict[str, Output]): List of output configurations.
         parameters (dict[str, Parameter]): List of parameter configurations.
-        display_only (Optional[dict[str, Parameter]]): List of display-only parameters, or None.
+        display_only (Optional[dict[str, DisplayOnly]]): List of display-only parameters, or None.
         exec_function (ExecFunction): Execution function details.
         citations (dict[str, Citations]): Citations information.
         cli_sequence (dict[str, dict]): Pre-ordered sequence of CLI arguments.

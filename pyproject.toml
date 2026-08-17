@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Interface generation targets for Bilayers"
 requires-python = ">=3.9"
 dependencies = [
-    "bilayers-schema @ git+https://github.com/bilayer-containers/bilayers-schema.git@dev",
+    "bilayers-schema @ git+https://github.com/bilayer-containers/bilayers-schema.git",
 ]
 
 [project.optional-dependencies]
