@@ -1,9 +1,19 @@
+import os
 import subprocess
 from IPython.display import display, HTML
 import traceback
 import urllib.parse
 
 try:
+    # Some CLIs (e.g. elastix) require the output directory to already exist.
+    for _item in cli_sequence:
+        if _item.get("output_dir_set"):
+            _param_info = param_vars.get(_item.get("name", "").lower().replace(" ", "_"))
+            if _param_info:
+                _out_dir = _param_info["widget"].value
+                if _out_dir:
+                    os.makedirs(_out_dir, exist_ok=True)
+
     res = subprocess.run(cli_command.value, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     {% raw %}
     !{cli_command.value}
