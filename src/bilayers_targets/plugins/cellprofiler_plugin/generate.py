@@ -225,6 +225,8 @@ def generate_cellprofiler_plugin(
         else:
             parameters_flat[paramkey]=paramvalue
 
+    # The plugin embeds the parameters dict verbatim, so a secret's default is dropped before it gets there
+    parameters_flat = {key: ({**param, "default": ""} if param.get("type") == "secret" else param) for key, param in parameters_flat.items()}
 
     cellprofiler_code: str = template.render(
         inputs=inputs,
