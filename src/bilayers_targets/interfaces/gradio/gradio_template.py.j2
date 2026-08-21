@@ -104,25 +104,33 @@ def generate_cli_command(
         # Handle list types (inputs with file/image/measurement/etc.)
         elif isinstance(value, list):
             folder_name = item.get("folder_name")
-            if not folder_name:
-                if optional:
-                    # optional file input; nothing to do
-                    continue
-                raise gr.Error(f"{label}: folder_name missing in spec.", duration=None)
 
-            if not value:  # just in case
+            # No files uploaded: skip if optional, error if mandatory
+            if not value:
                 if optional:
                     continue
                 raise gr.Error(f"{label} needs a file. It's Mandatory!", duration=None)
 
-            os.makedirs(folder_name, exist_ok=True)
-            for file_path in value:
-                shutil.copy(file_path, folder_name)
-            value = folder_name
-            if cli_tag and cli_tag_is_valid(cli_tag):
-                option = option_to_append(cli_tag, value)
-                if option:
-                    cli_command.append(option)
+            if folder_name:
+                # Folder-style: copy uploaded files into folder_name, pass the folder path
+                os.makedirs(folder_name, exist_ok=True)
+                for file_path in value:
+                    shutil.copy(file_path, folder_name)
+                value = folder_name
+                if cli_tag and cli_tag_is_valid(cli_tag):
+                    option = option_to_append(cli_tag, value)
+                    if option:
+                        cli_command.append(option)
+            else:
+                # List-style (folder_name is None): pass the individual file paths
+                # directly to the CLI, e.g. "--in a b c" or positional "a b c".
+                # A single file is just the one-path case of this.
+                paths = " ".join(str(file_path) for file_path in value)
+                if cli_tag_is_valid(cli_tag):
+                    cli_command.append(option_to_append(cli_tag, paths))
+                elif cli_tag == "":
+                    cli_command.append(paths)
+                # cli_tag is None / "None" -> input intentionally not passed to CLI
 
         # Handle text output paths, check if it has a directory-name i.e. it's coming for declaring output path
         elif isinstance(value, str) and item_type == "textbox" and item.get("output_dir_set"):
@@ -167,6 +175,11 @@ def generate_cli_command(
                 option = option_to_append(cli_tag, value)
                 if option:
                     cli_command.append(option)
+            elif cli_tag == "":
+                # Positional argument: append the bare value, mirroring the
+                # cli_tag == "" case for list-style inputs.
+                cli_command.append(str(value))
+            # cli_tag is None / "None" -> intentionally not passed to CLI
 
     return " ".join(cli_command), folder_name, output_folder_name
 

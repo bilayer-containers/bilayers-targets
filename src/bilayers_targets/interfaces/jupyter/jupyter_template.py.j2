@@ -52,8 +52,12 @@ radio_options = {
 {% set input_label = key | lower | replace(" ", "_") %}
 
 {% if input_conf.get('type') in ['image', 'measurement', 'array', 'file', 'executable'] %}
-mount_path = "{{ input_conf.get('folder_name', '/bilayers/input_images') }}"
+{% set _folder_name = input_conf.get('folder_name') %}
 upload_temp_dir = tempfile.mkdtemp(prefix="jupyter_upload_")
+{% if _folder_name %}
+# folder_name set -> folder-style: pass the directory path (mount if pre-populated)
+pass_as_list = False
+mount_path = "{{ _folder_name }}"
 
 # Check if mount folder exists and has files
 if os.path.exists(mount_path) and any(os.scandir(mount_path)):
@@ -73,6 +77,13 @@ else:
     {{ input_label }} = widgets.FileUpload(multiple=True, description="Upload Files")
     current_input_dir = upload_temp_dir
     is_mounted = False
+{% else %}
+# folder_name is null -> list-style: pass the individual file paths to the CLI
+pass_as_list = True
+{{ input_label }} = widgets.FileUpload(multiple=True, description="Upload Files")
+current_input_dir = upload_temp_dir
+is_mounted = False
+{% endif %}
 {%- endif %}
 
 # Add a description label
@@ -91,7 +102,8 @@ param_vars["{{ input_label }}"] = {
     "cli_order": {{ input_conf.get('cli_order', 0) }},
     "folder_name": current_input_dir,
     "optional": {{ input_conf.get('optional', False) }},
-    "is_mounted": is_mounted
+    "is_mounted": is_mounted,
+    "pass_as_list": pass_as_list
 }
 {# param_vars.append(("{{ input_conf.get('cli_tag') }}", {{ input_label }}, {{ input_conf.get('cli_order', 0) }}, "{{ input_conf.get('folder_name', '') }}")) #}
 {%- endif %}
@@ -352,6 +364,14 @@ def construct_cli_command() -> str:
             else:
                 print(f"No input files found for {cli_tag}")
                 continue
+
+            # List-style (folder_name null in spec): pass individual file paths, not the
+            # dir. Build from widget.value to preserve the user's upload order.
+            if param_info.get("pass_as_list"):
+                value = " ".join(
+                    os.path.join(folder_name, fi["name"])
+                    for fi in widget.value if fi.get("name")
+                )
 
             option = option_to_append(cli_tag, value)
             if option is not None:
