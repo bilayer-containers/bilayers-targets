@@ -175,6 +175,7 @@ class {{ algorithm_folder_name }}({{ category_to_class.get(computed_category, "M
             "integer": "Integer",
             "float": "Float",
             "textbox": "Text",
+            "secret": "Text",
         } %}
         {% set default_type = "Text" %} {# Fallback type #}
 
@@ -278,7 +279,9 @@ The image will be automatically downloaded on first use.
                 {% endfor %}
             ],
             {% endif %}
-            {% if parameter.get('default') is not none %}
+            {% if parameter.get('type') == 'secret' %}
+            value="",
+            {% elif parameter.get('default') is not none %}
             {% if parameter.get('type') == 'checkbox' %}
             {% if parameter.get('default') in [True, "True", "true"] %}
             value=True,
@@ -369,10 +372,11 @@ If set to "Default Output Folder", measurements will be saved in [DefaultOutputF
         settings.append(self.execution_method)
         settings.append(self.docker_image)
         settings.append(self.clean_temp_files)
-        {% for key, param in parameters.items() %}
+        {# secrets are left out so their value is never written into a saved pipeline #}
+        {% for key, param in parameters.items() if param.get('type') != 'secret' %}
         settings.append(self.{{ param.get('name') }})
         {% endfor %}
-        
+
         return settings
 
     #
@@ -649,6 +653,19 @@ If set to "Default Output Folder", measurements will be saved in [DefaultOutputF
             for flag, mapping in mounts:
                 cmd.extend([flag, mapping])
 
+            # "-e NAME" without a value tells the container runtime to forward the variable from
+            # run_env, so the secret stays out of cmd and out of the host process list
+            run_env = os.environ.copy()
+            {% for key, param in parameters.items() if param.get('type') == 'secret' %}
+            {% if not param.get('optional', False) %}
+            if not self.{{ param.get('name') }}.value:
+                raise ValueError("{{ param.get('label', '') }} needs to have some value. It's Mandatory!")
+            {% endif %}
+            if self.{{ param.get('name') }}.value:
+                run_env["{{ param.get('name') | upper | replace(' ', '_') }}"] = self.{{ param.get('name') }}.value
+                cmd.extend(["-e", "{{ param.get('name') | upper | replace(' ', '_') }}"])
+            {% endfor %}
+
             cmd.append(self.docker_image.value)
            
             {% set cli_tokens = exec_function.get('cli_command').split(' ') %}
@@ -661,7 +678,7 @@ If set to "Default Output Folder", measurements will be saved in [DefaultOutputF
                 if cli_tag and container_path:
                     cmd.extend([cli_tag, container_path])
             
-            {% for key, param in parameters.items() %}
+            {% for key, param in parameters.items() if param.get('type') != 'secret' %}
             {% if param.get('cli_tag') %}
             {% if param.get('type') == "checkbox" %}
             {% if param.get('append_value') %}
@@ -687,7 +704,7 @@ If set to "Default Output Folder", measurements will be saved in [DefaultOutputF
             LOGGER.info(f"Running Docker command: {' '.join(cmd)}")
 
             # Execute Docker/Podman container
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600, env=run_env)
             
             if result.returncode != 0:
                 LOGGER.error(f"Container execution failed: {result.stderr}")

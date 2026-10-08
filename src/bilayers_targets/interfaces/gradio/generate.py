@@ -62,7 +62,8 @@ def generate_gradio_app(
     parameters_flat = {}
 
     for paramkey, paramvalue in parameters.items():
-        assert "type" in paramvalue and "default" in paramvalue and "label" in paramvalue
+        # A secret has no default: its value only ever comes from the user at run time
+        assert "type" in paramvalue and "label" in paramvalue and ("default" in paramvalue or paramvalue["type"] == "secret")
         if paramvalue["type"] in ["float", "integer"] and str(paramvalue["default"]) in ["None", "False"]:
             # "Set a value?" toggle
             bool_param = dict(paramvalue)

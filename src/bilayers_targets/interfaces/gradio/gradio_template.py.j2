@@ -228,6 +228,8 @@ def on_submit(
     {% set pk = key | lower | replace(' ', '_') %}
     {% if key.startswith('set_') %}
     {# set_* checkboxes are only used for visibility toggling — never passed to CLI via kwargs #}
+    {% elif param_conf.get('type') == 'secret' %}
+    {# secrets are passed to the algorithm as environment variables, never through kwargs #}
     {% elif key in split_parameters %}
     {# Original numeric param: only pass value if its paired set_* checkbox is True #}
     {% set set_key = "set_" + pk %}
@@ -248,9 +250,23 @@ def on_submit(
     cli_command, folder_name, output_folder_name = generate_cli_command(cli_sequence, **kwargs)
     print("Generated CLI command:", cli_command)
 
+    # Secrets reach the algorithm through the environment, so they never appear in the command or the logs
+    run_env = os.environ.copy()
+    {% if parameters %}
+    {% for key, param_conf in parameters.items() if param_conf.get('type') == 'secret' %}
+    {% set pk = key | lower | replace(' ', '_') %}
+    {% if not param_conf.get('optional', False) %}
+    if not {{ pk }}:
+        raise gr.Error("{{ param_conf.get('label', '') }} needs to have some value. It's Mandatory!", duration=None)
+    {% endif %}
+    if {{ pk }}:
+        run_env["{{ key | upper | replace(' ', '_') }}"] = {{ pk }}
+    {% endfor %}
+    {% endif %}
+
     # Execute the CLI command
     try:
-        result = subprocess.run(cli_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = subprocess.run(cli_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=run_env)
         print("Command executed successfully")
 
         # Check if output_folder_name is not None and is a directory
@@ -376,6 +392,8 @@ def on_submit(
 {{ param_label }} = gr.Textbox(label="{{ param_conf.get('label', '') }}", info="{{ param_conf.get('description', '') }}", value="{{ param_conf.get('default', '') }}", interactive={{ param_conf.get('output_dir_set', True) }})
 {% elif param_conf.get('type') == 'checkbox' %}
 {{ param_label }} = gr.Checkbox(label="{{ param_conf.get('label', '') }}", info="{{ param_conf.get('description', '') }}", value={{ param_conf.get('default', False) }})
+{% elif param_conf.get('type') == 'secret' %}
+{{ param_label }} = gr.Textbox(label="{{ param_conf.get('label', '') }}", info="{{ param_conf.get('description', '') }}", type="password", value="")
 {% endif %}
 
 {% endfor %}

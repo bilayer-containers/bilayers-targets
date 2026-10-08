@@ -3,6 +3,19 @@ from IPython.display import display, HTML
 import traceback
 import urllib.parse
 
+# Secrets reach the algorithm through the environment, so they never appear in the command or the logs
+{% if parameters %}
+{% for key, param_conf in parameters.items() if param_conf.get('type') == 'secret' %}
+{% set pk = key | lower | replace(' ', '_') %}
+{% if not param_conf.get('optional', False) %}
+if not {{ pk }}.value:
+    raise ValueError("{{ param_conf.get('label', '') }} needs to have some value. It's Mandatory!")
+{% endif %}
+if {{ pk }}.value:
+    os.environ["{{ key | upper | replace(' ', '_') }}"] = {{ pk }}.value
+{% endfor %}
+{% endif %}
+
 try:
     res = subprocess.run(cli_command.value, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     {% raw %}
