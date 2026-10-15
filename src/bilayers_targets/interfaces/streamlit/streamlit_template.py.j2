@@ -292,7 +292,7 @@ def on_submit(
         raise Exception("{{ param_conf.get('label', '') }} needs to have some value. It's Mandatory!")
     {% endif %}
     if {{ pk }}:
-        run_env["{{ key | upper | replace(' ', '_') }}"] = {{ pk }}
+        run_env["BILAYERS_SECRET_{{ key | upper | replace(' ', '_') }}"] = {{ pk }}
     {% endfor %}
     {% endif %}
 
