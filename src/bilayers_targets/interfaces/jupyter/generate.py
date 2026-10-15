@@ -58,6 +58,9 @@ def generate_jupyter_notebook(
     def create_markdown_cell(content: str) -> nbf.NotebookNode:
         return nbf.v4.new_markdown_cell(content)
 
+    # The notebook prints the parameters dict verbatim, so a secret's default is dropped before it gets there
+    parameters = {key: ({**param, "default": ""} if param.get("type") == "secret" else param) for key, param in parameters.items()}
+
     template = env.get_template(template_name)
     notebook_content: str = template.render(
         inputs=inputs,
@@ -104,7 +107,7 @@ def generate_jupyter_notebook(
     # jupyter_shell_command_template_path
     jupyter_shell_command_template_path = template_dir / "jupyter_shell_command_template.py.j2"
     shell_command_template = env.get_template(os.path.basename(jupyter_shell_command_template_path))
-    run_command_code: str = shell_command_template.render(cli_command=exec_function.get("cli_command", ""))
+    run_command_code: str = shell_command_template.render(cli_command=exec_function.get("cli_command", ""), parameters=parameters)
     # run command code cell
     run_command_code_cell = create_code_cell(run_command_code)
     run_command_code_cell.metadata.jupyter = {"source_hidden": True}
