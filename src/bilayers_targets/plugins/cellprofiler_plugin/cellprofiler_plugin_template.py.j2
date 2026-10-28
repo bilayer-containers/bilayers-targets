@@ -662,7 +662,7 @@ If set to "Default Output Folder", measurements will be saved in [DefaultOutputF
                 raise ValueError("{{ param.get('label', '') }} needs to have some value. It's Mandatory!")
             {% endif %}
             if self.{{ param.get('name') }}.value:
-                run_env["BILAYERS_SECRET_{{ param.get('name') | upper | replace(' ', '_') }}"] = self.{{ param.get('name') }}.value
+                run_env["{{ param.get('name') | upper | replace(' ', '_') }}"] = self.{{ param.get('name') }}.value
                 cmd.extend(["-e", "{{ param.get('name') | upper | replace(' ', '_') }}"])
             {% endfor %}
 

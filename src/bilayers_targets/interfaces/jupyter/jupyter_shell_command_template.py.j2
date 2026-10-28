@@ -13,7 +13,7 @@ if not {{ pk }}.value:
     raise ValueError("{{ param_conf.get('label', '') }} needs to have some value. It's Mandatory!")
 {% endif %}
 if {{ pk }}.value:
-    run_env["BILAYERS_SECRET_{{ key | upper | replace(' ', '_') }}"] = {{ pk }}.value
+    run_env["{{ key | upper | replace(' ', '_') }}"] = {{ pk }}.value
 {% endfor %}
 {% endif %}
 
