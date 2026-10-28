@@ -227,7 +227,8 @@ def on_submit(
     {% endfor %}
     {% endif %}
     {% if parameters %}
-    {% for key, param_conf in parameters.items() %}
+    {# secrets are passed to the algorithm as environment variables, never through kwargs #}
+    {% for key, param_conf in parameters.items() if param_conf.get('type') != 'secret' %}
         "{{ key | lower | replace(' ', '_') }}": {{ key | lower | replace(' ', '_') }},
     {% endfor %}
     {% endif %}
@@ -247,7 +248,8 @@ def on_submit(
         {% endif %}
     },
     {% endfor %}
-    {% for key, param_conf in parameters.items() %}
+    {# secrets are left out so their default never gets written into the generated app #}
+    {% for key, param_conf in parameters.items() if param_conf.get('type') != 'secret' %}
     "{{ key | lower | replace(' ', '_') }}": {
         "cli_tag": "{{ param_conf.get('cli_tag', '') }}",
         "default": "{{ param_conf.get('default', '') }}",
@@ -280,9 +282,23 @@ def on_submit(
         existing_input_files["{{ input_conf.get('folder_name', '') }}"] = [(x,pathlib.Path(x).stat().st_mtime) for x in glob.glob(f"{{ input_conf.get('folder_name', '') }}/*")]
         {% endfor %}
 
+    # Secrets reach the algorithm through the environment, so they never appear in the command or the logs
+    run_env = os.environ.copy()
+    {% if parameters %}
+    {% for key, param_conf in parameters.items() if param_conf.get('type') == 'secret' %}
+    {% set pk = key | lower | replace(' ', '_') %}
+    {% if not param_conf.get('optional', False) %}
+    if not {{ pk }}:
+        raise Exception("{{ param_conf.get('label', '') }} needs to have some value. It's Mandatory!")
+    {% endif %}
+    if {{ pk }}:
+        run_env["{{ key | upper | replace(' ', '_') }}"] = {{ pk }}
+    {% endfor %}
+    {% endif %}
+
     # Execute the CLI command
     try:
-        result = subprocess.run(cli_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = subprocess.run(cli_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=run_env)
         print("Command executed successfully")
 
         # Check if output_folder_name is not None and is a directory
@@ -356,6 +372,8 @@ with st.form("my_form"):
     {{ param_label }} = st.text_input(label="{{ param_conf.get('label', '') }}", help="{{ param_conf.get('description', '') }}", value="{{ param_conf.get('default', '') }}") 
     {% elif param_conf.get('type') == 'checkbox' -%}
     {{ param_label }} = st.checkbox(label="{{ param_conf.get('label', '') }}", help="{{ param_conf.get('description', '') }}", value={{ param_conf.get('default', False) }})
+    {% elif param_conf.get('type') == 'secret' -%}
+    {{ param_label }} = st.text_input(label="{{ param_conf.get('label', '') }}", help="{{ param_conf.get('description', '') }}", type="password", value="")
     {%- endif %}
 
     {% endfor %}

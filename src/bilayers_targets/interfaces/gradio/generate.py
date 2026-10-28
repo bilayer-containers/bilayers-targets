@@ -62,8 +62,8 @@ def generate_gradio_app(
     parameters_flat = {}
 
     for paramkey, paramvalue in parameters.items():
-        assert "type" in paramvalue and "default" in paramvalue and "label" in paramvalue
-        if paramvalue["type"] in ["float", "integer"] and str(paramvalue["default"]) in ["None", "False"]:
+        assert "type" in paramvalue and "label" in paramvalue
+        if paramvalue["type"] in ["float", "integer"] and str(paramvalue.get("default")) in ["None", "False"]:
             # "Set a value?" toggle
             bool_param = dict(paramvalue)
             bool_param["name"] = f"set_{paramkey}"

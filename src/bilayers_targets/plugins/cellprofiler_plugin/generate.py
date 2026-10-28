@@ -207,8 +207,8 @@ def generate_cellprofiler_plugin(
     split_parameters = {}
     parameters_flat = {}
     for paramkey, paramvalue in parameters.items():
-        assert "type" in paramvalue and "default" in paramvalue and "label" in paramvalue
-        if paramvalue["type"] in ["float", "integer"] and paramvalue["default"] == "None":
+        assert "type" in paramvalue and "label" in paramvalue
+        if paramvalue["type"] in ["float", "integer"] and paramvalue.get("default") == "None":
             bool_param_dict = dict(paramvalue)
             bool_param_dict["name"]=f"set_{paramkey}"
             bool_param_dict["type"]="radio"
@@ -225,6 +225,8 @@ def generate_cellprofiler_plugin(
         else:
             parameters_flat[paramkey]=paramvalue
 
+    # The plugin embeds the parameters dict verbatim, so a secret's default is dropped before it gets there
+    parameters_flat = {key: ({**param, "default": ""} if param.get("type") == "secret" else param) for key, param in parameters_flat.items()}
 
     cellprofiler_code: str = template.render(
         inputs=inputs,

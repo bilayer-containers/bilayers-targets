@@ -127,6 +127,8 @@ advanced_widgets.append(tab)
 {{ param_label }} = widgets.Textarea(value="{{ param_conf.get('default', '') }}")
 {% elif param_conf.get('type') == 'checkbox' %}
 {{ param_label }} = widgets.Checkbox(value={{ param_conf.get('default', False) }})
+{% elif param_conf.get('type') == 'secret' %}
+{{ param_label }} = widgets.Password(value="")
 {%- endif %}
 
 # Add a description label
@@ -138,7 +140,9 @@ tab.set_title(0, "{{ param_conf.get('label', '') }}")
 tab.set_title(1, "Description")
 
 # Append the corresponding cli_tag, widget to param_vars
-{% if param_conf.get('type') == 'checkbox' %}
+{% if param_conf.get('type') == 'secret' %}
+{# secrets are read straight off the widget when the command runs, so they need no param_vars entry and no observer #}
+{% elif param_conf.get('type') == 'checkbox' %}
 {# param_vars.append(("{{ param_conf.get('cli_tag') }}", {{ param_label }}, {{ param_conf.get('cli_order', 0) }}, {{ param_conf.get('append_value', False) }} )) #}
 param_vars["{{ param_label }}"] = {
     "cli_tag": "{{ param_conf.get('cli_tag') }}",
