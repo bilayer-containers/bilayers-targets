@@ -16,6 +16,8 @@ gradio = ["jinja2"]
 jupyter = ["jinja2", "nbformat"]
 cellprofiler_plugin = ["jinja2"]
 streamlit = ["jinja2"]
+# Generating run_batch.py only needs jinja2; *running* it needs `pip install hail`.
+hail_batch = ["jinja2"]
 
 interfaces = [
     "bilayers-targets[gradio]",

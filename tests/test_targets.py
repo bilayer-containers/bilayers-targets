@@ -17,7 +17,7 @@ from pydantic import TypeAdapter, ValidationError
 from bilayers_schema import InterfaceInput
 from bilayers_targets import available_ifaces
 
-INTERFACES = ["gradio", "jupyter", "streamlit", "cellprofiler_plugin"]
+INTERFACES = ["gradio", "jupyter", "streamlit", "cellprofiler_plugin", "hail_batch"]
 
 # Build one runtime validator directly from the existing TypedDict - no parallel
 # model, so bilayers-schema stays the single source of truth for the contract.
