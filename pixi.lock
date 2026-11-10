@@ -1138,6 +1138,7 @@ packages:
   - nbformat ; extra == 'jupyter'
   - jinja2 ; extra == 'cellprofiler-plugin'
   - jinja2 ; extra == 'streamlit'
+  - jinja2 ; extra == 'hail-batch'
   - bilayers-targets[gradio] ; extra == 'interfaces'
   - bilayers-targets[jupyter] ; extra == 'interfaces'
   - bilayers-targets[streamlit] ; extra == 'interfaces'

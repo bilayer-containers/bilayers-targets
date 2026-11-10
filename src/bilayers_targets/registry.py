@@ -7,6 +7,7 @@ _INTERFACE_MODULES = {
     "jupyter": "bilayers_targets.interfaces.jupyter.generate",
     "streamlit": "bilayers_targets.interfaces.streamlit.generate",
     "cellprofiler_plugin": "bilayers_targets.plugins.cellprofiler_plugin.generate",
+    "hail_batch": "bilayers_targets.plugins.hail_batch.generate",
 }
 
 for name, module_name in _INTERFACE_MODULES.items():
